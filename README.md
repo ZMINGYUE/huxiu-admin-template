@@ -143,5 +143,3 @@ npm i @babel/core @babel/plugin-transform-spread @babel/plugin-syntax-dynamic-im
 
     [潘佳辰项目地址]: https://github.com/PanJiaChen/vue-admin-template
 
-    
-    [虎嗅新版PC地址]: https://github.com/PanJiaChen/vue-admin-template	"仅虎嗅员工能访问"
