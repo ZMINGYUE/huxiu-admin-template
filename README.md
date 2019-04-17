@@ -46,17 +46,20 @@ npm i friendly-errors-webpack-plugin -D
 ```
 建一个编辑器的配置文件`.editorconfig`,跟我们其它项目都是**一样**的。
 建一个git的忽略文件`.gitignore`，配置跟其它的一样，根据不同的项目可有所调整
+
 4. 下载一些可能用到式的依赖,svg那个是因为我的项目的icon会用到svg
 ```shell
-npm i  vue-loader vue-template-compiler url-loader mini-css-extract-plugin node-sass sass-loader html-webpack-plugin autoprefixer rimraf svg-sprite-loader -D
+npm i  vue-loader vue-template-compiler url-loader mini-css-extract-plugin node-sass sass-loader css-loader html-webpack-plugin autoprefixer rimraf svg-sprite-loader -D
  npm i postcss-loader -D
 ```
 根目录下新建`.postcssrc.js`文件写一些postcss的配置，目前跟虎嗅项目一样，这个可以根据不同的项目调整
+
 5. eslint相关的一些依赖
 ```shell
  npm i eslint eslint-config-vue eslint-loader eslint-plugin-html eslint-plugin-vue -D
 ```
 根目录下建eslint的配置文件`.eslintrc.js`配置跟我们做的其它项目是**一样**的，还有一个忽略eslint的配置文件`.eslintignore`，ignore文件根据不同的项目可有所调整
+
 6. babel相关的一些依赖
 ```shell
 npm i @babel/core @babel/plugin-transform-spread @babel/plugin-syntax-dynamic-import @babel/plugin-transform-runtime @babel/preset-env babel-eslint babel-loader -D
@@ -66,11 +69,11 @@ npm i @babel/core @babel/plugin-transform-spread @babel/plugin-syntax-dynamic-im
 ```shell
  npm i @babel/polyfill @babel/runtime
 ```
-7.下载一些真正用的到`vue`,`vuex`,`vue-router`, `axios`等等
+7. 下载一些真正用的到`vue`,`vuex`,`vue-router`, `axios`等等
 ```shell
  npm i vue vuex vue-router axios
 ```
-8.建一些新的文件和文件夹，目录结构如下
+8. 建一些新的文件和文件夹，目录结构如下
 ```shell
 .
 ├── README.md
@@ -122,6 +125,18 @@ npm i @babel/core @babel/plugin-transform-spread @babel/plugin-syntax-dynamic-im
   5）下载`eslint-friendly-formatter`
   ```shell
   npm i eslint-friendly-formatter -D
+  ```
+  6）下载`js-cookie`
+  ```shell
+  npm i js-cookie
+  ```
+  7）补一些生产环境下需要用的webapck的插件,下载`copy-webpack-plugin uglifyjs-webpack-plugin script-ext-html-webpack-plugin optimize-css-assets-webpack-plugin`
+  ```shell
+  npm i copy-webpack-plugin script-ext-html-webpack-plugin optimize-css-assets-webpack-plugin -D
+  ```
+  8）`sass-resources-loader`
+  ```shell
+  npm i sass-resources-loader -D
   ```
 
 10. 参考链接

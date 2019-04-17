@@ -8,17 +8,19 @@ module.exports = {
   },
 
   output: {
-    path: path.join(__dirname, './dll'),
-    filename: 'vendor.dll.js',
-    library: 'vendor_[hash]_lib',
-    libraryTarget: 'var'
+    path: path.resolve(__dirname, "./dll"),
+    filename: "[name].js",
+    sourceMapFilename: "[name].map",
+    pathinfo: true,
+    library: '[name]_dll'
   },
+  
 
   plugins: [
     new webpack.DllPlugin({
-      path: path.join(__dirname, './dll/', 'vendor-manifest.json'),
-      name: 'vendor_[hash]_lib',
-      context: __dirname
-    })
+      context: __dirname,
+      name: "[name]_[hash]",
+      path: path.join(__dirname, "dll", "manifest.json")
+   })
   ]
 };

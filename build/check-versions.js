@@ -3,6 +3,14 @@ const chalk = require('chalk');
 const semver = require('semver');
 const packageConfig = require('../package.json');
 const shell = require('shelljs');
+const versionRequirements = [
+  {
+    name: 'node',
+    currentVersion: semver.clean(process.version),
+    versionRequirement: packageConfig.engines.node
+  }
+]
+
 
 function exec(cmd) {
   return require('child_process')
@@ -11,13 +19,6 @@ function exec(cmd) {
     .trim();
 }
 
-const versionRequirements = [
-  {
-    name: 'node',
-    currentVersion: semver.clean(process.version),
-    versionRequirement: packageConfig.engines.node
-  }
-];
 
 if (shell.which('npm')) {
   versionRequirements.push({

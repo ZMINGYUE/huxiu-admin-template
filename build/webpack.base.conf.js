@@ -3,21 +3,16 @@ const path = require('path');
 const utils = require('./utils');
 const config = require('../config');
 const { VueLoaderPlugin } = require('vue-loader');
-
-function resolve(dir) {
-  return path.join(__dirname, '..', dir);
-}
-
 const createLintingRule = () => ({
-  test: /\.(js|vue)$/,
-  loader: 'eslint-loader',
-  enforce: 'pre',
-  include: [resolve('src'), resolve('test')],
-  options: {
-    formatter: require('eslint-friendly-formatter'),
-    emitWarning: !config.dev.showEslintErrorsInOverlay
-  }
-});
+    test: /\.(js|vue)$/,
+    loader: 'eslint-loader',
+    enforce: 'pre',
+    include: [path.resolve(__dirname, 'src'), path.resolve(__dirname, 'test')],
+    options: {
+      formatter: require('eslint-friendly-formatter'),
+      emitWarning: !config.dev.showEslintErrorsInOverlay
+    }
+  });
 
 module.exports = {
   context: path.resolve(__dirname, '../'),
@@ -35,19 +30,12 @@ module.exports = {
   resolve: {
     extensions: ['.js', '.vue', '.json'],
     alias: {
-      '@': resolve('src'),
-      'views':resolve('../src/views'),
-      'store':resolve('../src/store'),
-      'styles': resolve( '../src/styles'),
-      'api': ('../src/api'),
-      'global-components': resolve('../src/components'),
-      'utils': resolve('../src/utils'),
-      'mock': resolve('../src/mock')
+      '@': path.resolve(__dirname, '../src')
     }
   },
   module: {
     rules: [
-      ...(config.dev.useEslint ? [createLintingRule()] : []),
+      ...config.dev.useEslint ? [createLintingRule()] : [],
       {
         test: /\.vue$/,
         loader: 'vue-loader',
@@ -62,16 +50,16 @@ module.exports = {
         test: /\.js$/,
         loader: 'babel-loader',
         include: [
-          resolve('src'),
-          resolve('test'),
-          resolve('mock'),
-          resolve('node_modules/webpack-dev-server/client')
+          path.resolve(__dirname, 'src'),
+          path.resolve(__dirname, 'test'),
+          path.resolve(__dirname, 'mock'),
+          path.resolve(__dirname, 'node_modules/webpack-dev-server/client')
         ]
       },
       {
         test: /\.svg$/,
         loader: 'svg-sprite-loader',
-        include: [resolve('src/icons')],
+        include: [path.resolve(__dirname, 'src/icons')],
         options: {
           symbolId: 'icon-[name]'
         }
@@ -79,7 +67,7 @@ module.exports = {
       {
         test: /\.(png|jpe?g|gif|svg)(\?.*)?$/,
         loader: 'url-loader',
-        exclude: [resolve('src/icons')],
+        exclude: [path.resolve(__dirname, 'src/icons')],
         options: {
           limit: 10000,
           name: utils.assetsPath('img/[name].[hash:7].[ext]')

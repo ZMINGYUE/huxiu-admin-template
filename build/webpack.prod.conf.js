@@ -1,25 +1,25 @@
+'use strict'
+const path = require('path')
+const utils = require('./utils')
+const webpack = require('webpack')
+const config = require('../config')
+const merge = require('webpack-merge')
+const baseWebpackConfig = require('./webpack.base.conf')
+const CopyWebpackPlugin = require('copy-webpack-plugin')
+const HtmlWebpackPlugin = require('html-webpack-plugin')
+const ScriptExtHtmlWebpackPlugin = require('script-ext-html-webpack-plugin')
+const MiniCssExtractPlugin = require('mini-css-extract-plugin')
+const OptimizeCSSAssetsPlugin = require('optimize-css-assets-webpack-plugin')
+const UglifyJsPlugin = require('uglifyjs-webpack-plugin')
 
-const path = require('path');
-const utils = require('./utils');
-const webpack = require('webpack');
-const config = require('../config');
-const merge = require('webpack-merge');
-const baseWebpackConfig = require('./webpack.base.conf');
-const HtmlWebpackPlugin = require('html-webpack-plugin');
-const FriendlyErrorsPlugin = require('friendly-errors-webpack-plugin');
-const MiniCssExtractPlugin = require('mini-css-extract-plugin');
-const portfinder = require('portfinder');
-const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
+const env = require('../config/prod.env')
 
-function resolve(dir) {
-  return path.join(__dirname, '..', dir);
-}
+// For NamedChunksPlugin
+const seen = new Set()
+const nameLength = 4
 
-const HOST = process.env.HOST;
-const PORT = process.env.PORT && Number(process.env.PORT);
-
-const devWebpackConfig = merge(baseWebpackConfig, {
-  mode: 'development',
+const webpackConfig = merge(baseWebpackConfig, {
+  mode: 'production',
   module: {
     rules: [
       {
@@ -39,97 +39,140 @@ const devWebpackConfig = merge(baseWebpackConfig, {
       }
     ]
   },
-  // cheap-module-eval-source-map is faster for development
-  devtool: config.dev.devtool,
-
-  optimization: {
-    minimize: true,
-    minimizer: new UglifyJsPlugin({
-      uglifyOptions: {
-        cache: true,
-        ie8: false,
-        comments: false,
-        compress: {
-          inline: false,
-          drop_console: true,
-          warnings: false,
-          drop_debugger: true
-        }
-      }
-    }),
-    usedExports: true,
-    sideEffects: true,
-    splitChunks: {
-      chunks: 'all'
-    },
-    runtimeChunk: {
-      name: 'manifest'
-    }
-  },
-
-  // these devServer options should be customized in /config/index.js
-  devServer: {
-    clientLogLevel: 'warning',
-    historyApiFallback: true,
-    hot: true,
-    compress: true,
-    host: HOST || config.dev.host,
-    port: PORT || config.dev.port,
-    open: config.dev.autoOpenBrowser,
-    overlay: config.dev.errorOverlay ?
-      { warnings: false, errors: true } :
-      false,
-    publicPath: config.dev.assetsPublicPath,
-    proxy: config.dev.proxyTable,
-    quiet: true, // necessary for FriendlyErrorsPlugin
-    watchOptions: {
-      poll: config.dev.poll
-    }
+  devtool: config.build.productionSourceMap ? config.build.devtool : false,
+  output: {
+    path: config.build.assetsRoot,
+    filename: utils.assetsPath('js/[name].[chunkhash:8].js'),
+    chunkFilename: utils.assetsPath('js/[name].[chunkhash:8].js')
   },
   plugins: [
+    // http://vuejs.github.io/vue-loader/en/workflow/production.html
     new webpack.DefinePlugin({
-      'process.env': require('../config/dev.env')
+      'process.env': env
     }),
-    new webpack.HotModuleReplacementPlugin(),
-    // https://github.com/ampedandwired/html-webpack-plugin
+    // extract css into its own file
+    new MiniCssExtractPlugin({
+      filename: utils.assetsPath('css/[name].[contenthash:8].css'),
+      chunkFilename: utils.assetsPath('css/[name].[contenthash:8].css')
+    }),
+    // generate dist index.html with correct asset hash for caching.
+    // you can customize output by editing /index.html
+    // see https://github.com/ampedandwired/html-webpack-plugin
     new HtmlWebpackPlugin({
-      filename: 'index.html',
-      template: 'index.html',
+      filename: config.build.index,
+      template: 'src/index.html',
       inject: true,
-      favicon: resolve('favicon.ico'),
-      title: 'vue-admin-template'
+      favicon: path.resolve(__dirname, '../favicon.ico'),
+      title: 'vue-admin-template',
+      minify: {
+        removeComments: true,
+        collapseWhitespace: true,
+        removeAttributeQuotes: true
+        // more options:
+        // https://github.com/kangax/html-minifier#options-quick-reference
+      }
+      // default sort mode uses toposort which cannot handle cyclic deps
+      // in certain cases, and in webpack 4, chunk order in HTML doesn't
+      // matter anyway
+    }),
+    new ScriptExtHtmlWebpackPlugin({
+      //`runtime` must same as runtimeChunk name. default is `runtime`
+      inline: /runtime\..*\.js$/
+    }),
+    // keep chunk.id stable when chunk has no name
+    new webpack.NamedChunksPlugin(chunk => {
+      if (chunk.name) {
+        return chunk.name
+      }
+      const modules = Array.from(chunk.modulesIterable)
+      if (modules.length > 1) {
+        const hash = require('hash-sum')
+        const joinedHash = hash(modules.map(m => m.id).join('_'))
+        let len = nameLength
+        while (seen.has(joinedHash.substr(0, len))) len++
+        seen.add(joinedHash.substr(0, len))
+        return `chunk-${joinedHash.substr(0, len)}`
+      } else {
+        return modules[0].id
+      }
+    }),
+    // keep module.id stable when vender modules does not change
+    new webpack.HashedModuleIdsPlugin(),
+    // copy custom static assets
+    new CopyWebpackPlugin([
+      {
+        from: path.resolve(__dirname, '../static'),
+        to: config.build.assetsSubDirectory,
+        ignore: ['.*']
+      }
+    ])
+  ],
+  optimization: {
+    minimize: true,
+    usedExports: true,
+    sideEffects: true,
+    // runtimeChunk: 'single',
+    minimizer: [
+      new UglifyJsPlugin({
+        uglifyOptions: {
+          cache: true,
+          ie8: false,
+          comments: false,
+          compress: {
+            inline: false,
+            drop_console: true,
+            warnings: false,
+            drop_debugger: true
+          }
+        }
+        // sourceMap: config.build.productionSourceMap,
+        // cache: true,
+        // parallel: true
+      }),
+      // Compress extracted CSS. We are using this plugin so that possible
+      // duplicated CSS from different components can be deduped.
+      new OptimizeCSSAssetsPlugin()
+    ]
+  }
+})
+
+if (config.build.productionGzip) {
+  const CompressionWebpackPlugin = require('compression-webpack-plugin')
+
+  webpackConfig.plugins.push(
+    new CompressionWebpackPlugin({
+      algorithm: 'gzip',
+      test: new RegExp(
+        '\\.(' + config.build.productionGzipExtensions.join('|') + ')$'
+      ),
+      threshold: 10240,
+      minRatio: 0.8
     })
-  ]
-});
+  )
+}
 
-module.exports = new Promise((resolve, reject) => {
-  portfinder.basePort = process.env.PORT || config.dev.port;
-  portfinder.getPort((err, port) => {
-    if (err) {
-      reject(err);
-    } else {
-      // publish the new Port, necessary for e2e tests
-      process.env.PORT = port;
-      // add port to devServer config
-      devWebpackConfig.devServer.port = port;
+if (config.build.generateAnalyzerReport || config.build.bundleAnalyzerReport) {
+  const BundleAnalyzerPlugin = require('webpack-bundle-analyzer')
+    .BundleAnalyzerPlugin
 
-      // Add FriendlyErrorsPlugin
-      devWebpackConfig.plugins.push(
-        new FriendlyErrorsPlugin({
-          compilationSuccessInfo: {
-            messages: [
-              `Your application is running here: http://${
-                devWebpackConfig.devServer.host
-              }:${port}`
-            ]
-          },
-          onErrors: config.dev.notifyOnErrors ?
-            utils.createNotifierCallback() :
-            undefined
-        })
-      );
+  if (config.build.bundleAnalyzerReport) {
+    webpackConfig.plugins.push(
+      new BundleAnalyzerPlugin({
+        analyzerPort: 8080,
+        generateStatsFile: false
+      })
+    )
+  }
 
-      resolve(devWebpackConfig);
-    }
-  });
-});
+  if (config.build.generateAnalyzerReport) {
+    webpackConfig.plugins.push(
+      new BundleAnalyzerPlugin({
+        analyzerMode: 'static',
+        reportFilename: 'bundle-report.html',
+        openAnalyzer: false
+      })
+    )
+  }
+}
+
+module.exports = webpackConfig

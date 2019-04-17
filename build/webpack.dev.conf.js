@@ -9,10 +9,6 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 const FriendlyErrorsPlugin = require('friendly-errors-webpack-plugin');
 const portfinder = require('portfinder');
 
-function resolve(dir) {
-  return path.join(__dirname, '..', dir);
-}
-
 const HOST = process.env.HOST;
 const PORT = process.env.PORT && Number(process.env.PORT);
 
@@ -69,12 +65,15 @@ const devWebpackConfig = merge(baseWebpackConfig, {
       filename: 'index.html',
       template: 'src/index.html',
       inject: true,
-      favicon: resolve('favicon.ico'),
+      favicon: path.resolve(__dirname, '../favicon.ico'),
       title: '虎嗅前端模版'
     }),
     new webpack.DllReferencePlugin({
       context: __dirname,
-      manifest: require('./dll/vendor-manifest.json')
+      manifest: require('./dll/manifest.json'),
+      name: './my-dll.js',
+      scope: 'xyz',
+      sourceType: 'commonjs2'
     })
   ]
 });
