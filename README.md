@@ -138,6 +138,10 @@ npm i @babel/core @babel/plugin-transform-spread @babel/plugin-syntax-dynamic-im
   ```shell
   npm i sass-resources-loader -D
   ```
+  9）`npm i -S core-js@2.5.7` 只有这个版本的才好使
+  ```shell
+  npm i npm i -S core-js@2.5.7 -D
+  ```
 
 10. 参考链接
 
